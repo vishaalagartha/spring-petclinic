@@ -6,9 +6,10 @@ pipeline {
                 sh './mvnw package'
             }
         }
-        stage('Run application') {
-            steps {
-                sh 'java -jar target/*.jar'
+        stage('SonarQube Analysis') {
+            def mvn = tool 'Default Maven';
+            withSonarQubeEnv() {
+            sh "${mvn}/bin/mvn clean verify sonar:sonar -Dsonar.projectKey=spring-petclinic -Dsonar.projectName='spring-petclinic'"
             }
         }
     }
