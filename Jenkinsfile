@@ -7,10 +7,9 @@ pipeline {
             }
         }
         stage('SonarQube Analysis') {
-            steps {
-              withSonarQubeEnv('SonarQube Scanner') {
-                sh 'mvn clean package sonar:sonar'
-              }
+            def mvn = tool 'Default Maven';
+            withSonarQubeEnv() {
+                sh "${mvn}/bin/mvn clean verify sonar:sonar -Dsonar.projectKey=spring-petclinic -Dsonar.projectName='spring-petclinic'"
             }
         } 
     }
