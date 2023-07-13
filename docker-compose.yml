@@ -31,6 +31,9 @@ services:
     ports:
       - "50000:50000"
       - "8080:8080"
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    command: jenkins-plugin-cli --plugins blueocean sonar
   sonarqube:
     container_name: sonarqube
     image: sonarqube
