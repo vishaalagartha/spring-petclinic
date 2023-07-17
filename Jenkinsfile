@@ -1,9 +1,11 @@
 pipeline {
     agent any
+    environment {
+        SONAR_TOKEN = sh(returnStdout: true, script: 'cat ../../sonar_token.txt')
+    }
     stages {
         stage('Build package') {
             steps {
-                sh 'pwd'
                 sh './mvnw package'
             }
         }
