@@ -27,15 +27,13 @@ services:
     - postgres
   jenkins:
     container_name: jenkins
-    image: jenkins/jenkins:jdk17
+    build: ./jenkins-container
     ports:
       - "50000:50000"
+      - "52022:22"
       - "8080:8080"
-    environment:
-      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
-    command: jenkins-plugin-cli --plugins blueocean sonar
-  sonarqube:
-    container_name: sonarqube
-    image: sonarqube
+  production:
+    container_name: production
+    build: ./server-container
     ports:
-      - "9000:9000"
+      - "8081:8080"
