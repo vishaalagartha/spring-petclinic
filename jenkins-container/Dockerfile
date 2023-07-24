@@ -1,7 +1,7 @@
 FROM jenkins/jenkins:jdk17
 USER root
 
-COPY devops.pem devops.pem
+COPY devops.pem /var/jenkins_home/devops.pem
 
 ENV JAVA_OPTS=-Djenkins.install.runSetupWizard=false
 ENV PATH="$PATH:/root/.local/bin"
