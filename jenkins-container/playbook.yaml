@@ -1,8 +1,99 @@
-- name: Copy build
+- name: Terminate ec2 instances
   hosts: localhost
-  remote_user: root
-
   tasks:
-    - name: Say hello world
-      ansible.builtin.debug:
-        msg: Hello world
+    - name: Terminate every running instance in a region.
+      amazon.aws.ec2_instance:
+        state: absent
+        region: us-west-1
+        aws_access_key: AKIAZJ6HNEMMPGQURAF5
+        aws_secret_key: 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
+        filters:
+          instance-state-name: running
+        wait: false
+      tags:
+        - terminate
+  
+- name: Create ec2 instance and store in server group
+  hosts: localhost
+  tasks:
+    - name: Launch an EC2 server
+      amazon.aws.ec2_instance:
+        instance_type: t2.micro
+        region: us-west-1
+        key_name: devops
+        security_group: devops-assignment-2
+        image_id: ami-0a31b1d679a45dda9
+        aws_access_key: AKIAZJ6HNEMMPGQURAF5
+        aws_secret_key: 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
+        network:
+          assign_public_ip: true
+        wait: true
+        state: running
+      tags:
+        - create
+
+- name: Store ec2 info
+  hosts: localhost
+  tasks:
+    - name: Get ec2 info
+      amazon.aws.ec2_instance_info:
+        region: us-west-1
+        aws_access_key: AKIAZJ6HNEMMPGQURAF5
+        aws_secret_key: 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
+        filters:
+          instance-state-name: ["running"]
+      register: ec2_node_info
+      tags:
+        - info
+    - name: Store ec2 public url
+      set_fact:
+        ec2_public_url: "{{ ec2_node_info['instances'][0]['network_interfaces'][0]['association']['public_dns_name'] }}"
+      tags:
+        - info
+    - name: Add host to server group
+      ansible.builtin.add_host:
+        name: '{{ ec2_public_url }}:22'
+        groups: server
+      tags:
+        - info
+
+- name: Prepare server for running application
+  hosts: server
+  become: true
+  become_user: root
+  tasks:
+    - name: Install java 17 on server
+      ansible.builtin.yum:
+        name: java-17-amazon-corretto-headless
+        use_backend: yum4
+      tags:
+        - install
+
+- name: Transfer build file to server
+  hosts: server
+  tasks:
+    - name: Copy file into ec2-user home directory
+      ansible.builtin.copy:
+        src: ../target/spring-petclinic-3.1.0-SNAPSHOT.jar 
+        dest: spring-petclinic-3.1.0-SNAPSHOT.jar
+        mode: 777
+      tags:
+        - copy
+
+- name: Stop application
+  hosts: server
+  tasks:
+    - name: Kill process running on port 8080
+      ignore_errors: true
+      ansible.builtin.shell: lsof -t -i:8080 | xargs kill -9
+      tags:
+        - run
+
+
+- name: Start application
+  hosts: server
+  tasks:
+    - name: Run application as background process
+      ansible.builtin.shell: nohup java -jar spring-petclinic-3.1.0-SNAPSHOT.jar </dev/null >/dev/null 2>&1 & sleep 5
+      tags:
+        - run
