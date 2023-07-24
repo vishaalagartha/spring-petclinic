@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Run ansible playbook') {
             steps {
-                sh "ansible-playbook jenkins-container/playbook.yaml --tags info,copy,run --private-key=${JENKINS_HOME}/devops.pem"
+                sh "cd jenkins_container && ansible-playbook playbook.yaml --tags info,copy,run --private-key=${JENKINS_HOME}/devops.pem"
             }
         }
         stage('Test webhook') {
