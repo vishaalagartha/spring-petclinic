@@ -25,15 +25,3 @@ services:
       - POSTGRES_DB=petclinic
     profiles:
     - postgres
-  jenkins:
-    container_name: jenkins
-    build: ./jenkins-container
-    ports:
-      - "50000:50000"
-      - "52022:22"
-      - "8080:8080"
-  production:
-    container_name: production
-    build: ./server-container
-    ports:
-      - "8081:8080"
