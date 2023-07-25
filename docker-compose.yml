@@ -34,5 +34,6 @@ services:
       - "8080:8080"
   sonarqube:
     container_name: sonarqube
-    image: sonarqube
+    image: sonarqube:9.9.1-community
+    ports:
       - "9000:9000"
